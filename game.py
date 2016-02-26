@@ -54,32 +54,7 @@ class Board(object):
             return False
 
     def check_wins(self, player):
-        # bl = len(self.board)
-
-        # rows
-        def rows(arr):
-            pass
-
-        # cols
-        def cols(arr):
-            pass
-
-        # diagonals in 2D
-        def diag(arr):
-            pass
-
-        # horizontal columns in 3D
-        def hslice():
-            pass
-
-        # vertical columns in 3D
-        def vslice():
-            pass
-
-        # cross diagonals in 3D (through center)
-        def cross():
-            pass
-
+        raise NotImplementedError
         # 1. rows, cols, and diags for each table
         # 2. vertical cols
         # 3. for each horizontal vert slice check diags
@@ -87,6 +62,7 @@ class Board(object):
         # 5. finally check 3D across entire array
 
     def display(self):
+        '''Only for basic text input at the moment'''
         dummy = np.concatenate(
             [[np.arange(9, dtype=int).reshape(3, 3)] for _ in range(3)])
         bl = len(self.board[0]) - 1
