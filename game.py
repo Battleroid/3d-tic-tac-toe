@@ -32,12 +32,12 @@ class Move(object):
 class PossibleMove(object):
 
     WINNING = 100  # three in a row; a win, we want this
-    CLOSE = 50  # two in a row; contiguous
+    CLOSE = 50  # two in the combination
     LONE = 1  # single lone cell
     EMPTY = 0  # nothing
 
-    def __init__(self, rank=PossibleMove.EMPTY, **kwargs):
-        super(PossibleMove, self).__init__(**kwargs)
+    def __init__(self, rank, board, r, c, player):
+        super(PossibleMove, self).__init__(board, r, c, player)
         self.rank = rank
 
     def __eq__(self, other):
