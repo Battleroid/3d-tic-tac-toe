@@ -58,10 +58,17 @@ class Board(object):
 
     piece = {1: 'X', 2: 'O'}
 
+<<<<<<< HEAD
     def __init__(self, player_first=True, player=1, ai=2, difficulty=3):
         self.board = self.__create_board()
         self.player_turn = True  # true if AI's turn
         self.player = player
+=======
+    def __init__(self, player_starts=True, player=1, ai=2):
+        self.board = np.zeros(pow(3, 3), dtype=int).reshape(3, 3, 3)
+        self.player_turn = player_starts  # true if AI's turn
+        self.player = player  # the character for the player
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
         self.ai = ai
         self.done = False
 
@@ -80,6 +87,7 @@ class Board(object):
         return tb
 
     def _sample_moves(self):
+        '''Bunch of sample moves to make sure stuff works'''
         # win on board 1
         self.move(0, 0, 2, 2)
         self.move(0, 1, 1, 2)
@@ -91,6 +99,7 @@ class Board(object):
         self.move(2, 1, 2, 1)
 
     def is_open(self, b, r, c):
+<<<<<<< HEAD
         '''Check if spot on board is open'''
         return self.board[b, r, c].player == 0
 
@@ -103,10 +112,21 @@ class Board(object):
         if self.is_open(b, r, c):
             self.board[b][r][c].player = player
             # self.check_wins(player)
+=======
+        '''Check if location is free'''
+        return self.board[b, r, c] == 0
+
+    def move(self, b, r, c, player):
+        '''Mark the specified location as taken by the player'''
+        if self.is_open(b, r, c):
+            self.board[b, r, c] = player
+            # self.check_for_win()
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
             return True
         else:
             return False
 
+<<<<<<< HEAD
     def get_moves(self, player):
         '''Get possible moves for player and rank accordingly'''
         raise NotImplementedError
@@ -118,6 +138,18 @@ class Board(object):
 
     def check_wins(self, player):
         '''Check if there are any wins for the given player'''
+=======
+    def ai_move(self, player):
+        '''Move the AI according to minimax/alpha-beta'''
+        raise NotImplementedError
+
+    def check_for_win(self):
+        '''Check if any row, col, slice, or diag has all of one player'''
+        raise NotImplementedError
+
+    def get_possible_moves(self, player):
+        '''Get list of possible moves, rank accordingly'''
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
         raise NotImplementedError
         # 1. rows, cols, and diags for each table
         # 2. vertical cols
@@ -133,8 +165,13 @@ class Board(object):
             for r, row in enumerate(table):
                 rs = []
                 for c, col in enumerate(row):
+<<<<<<< HEAD
                     block = '{:>1}'.format(Board.piece[col.player]) \
                             if col.player > 0 else '-'
+=======
+                    block = '{:>1}'.format(Board.piece[col]) if col > 0 \
+                            else '-'
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
                     if c < bl:
                         rs.append(str(block) + ' | ')
                     else:
@@ -142,22 +179,35 @@ class Board(object):
                 print ''.join(rs)
 
     def play(self):
+<<<<<<< HEAD
         '''Play the text based version'''
+=======
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
         while not self.done:
 
             # player's turn
             if self.player_turn:
                 self.display()
+<<<<<<< HEAD
                 brc = raw_input('Your turn (b,r,c): ')
                 b, r, c = map(int, brc.split(','))
                 while not self.is_open(b, r, c):
                     brc = raw_input('Spot taken (b,r,c): ')
+=======
+                brc = raw_input('Which location? (b,r,c): ')
+                b, r, c = map(int, brc.split(','))
+                while not self.is_open(b, r, c):
+                    brc = raw_input('Location not free (b,r,c): ')
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
                     b, r, c = map(int, brc.split(','))
                 self.move(b, r, c, self.player)
                 self.player_turn = False
             else:
                 print 'AI turn'
+<<<<<<< HEAD
                 # self.computer_move()
+=======
+>>>>>>> 76b9519bc56070bb91f1d0e2113175f4fefcbcc1
                 self.player_turn = True
 
 
