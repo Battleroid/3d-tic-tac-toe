@@ -11,7 +11,7 @@ class Move(object):
 
     def __eq__(self, other):
         if isinstance(other, Move):
-            return self.player == other.player
+            return self.r == other.r and self.c == self.c and self.b == other.b
 
     def __ne__(self, other):
         r = self.__eq__(other)
@@ -20,10 +20,13 @@ class Move(object):
         return not r
 
     def __repr__(self):
-        return r'<Move {},{},{}>'.format(self.b, self.r, self.c)
+        return r'<Move {},{},{} {}>'.format(self.b, self.r, self.c, self.player)
 
     def __str__(self):
         return str(self.player)
+
+    def __hash__(self):
+        return hash((self.b, self.r, self.c, self.player, ))
 
 
 class PossibleMove(object):
@@ -60,6 +63,7 @@ class Board(object):
 
     def __init__(self, player_first=True, player=1, ai=2, difficulty=3):
         self.board = self.__create_board()
+        self.combos = self.__create_combos()
         self.player_turn = True  # true if AI's turn
         self.player = player
         self.ai = ai
@@ -102,28 +106,95 @@ class Board(object):
         '''Check if spot is open, after move check for wins'''
         if self.is_open(b, r, c):
             self.board[b][r][c].player = player
-            # self.check_wins(player)
             return True
         else:
             return False
+
+    def check_wins(self):
+        '''Check if either player has any wins'''
+        raise NotImplementedError
 
     def get_moves(self, player):
         '''Get possible moves for player and rank accordingly'''
         raise NotImplementedError
 
-    def check_wins_for_all(self):
-        '''Check wins for all players'''
-        for p in Board.piece.values():
-            self.check_wins(p)
+    def __create_combos(self):
+        '''Generate all possible winning scenarios'''
+        # 1. Rows, cols, and diags for each table
+        # 2. Vertical cols
+        # 3. For each horizontal vert slice check diags
+        # 4. For each vertical slice check diags
+        # 5. Finally check 3D across entire array
+        combos = []
 
-    def check_wins(self, player):
-        '''Check if there are any wins for the given player'''
-        raise NotImplementedError
-        # 1. rows, cols, and diags for each table
-        # 2. vertical cols
-        # 3. for each horizontal vert slice check diags
-        # 4. for each vertical slice check diags
-        # 5. finally check 3D across entire array
+        # rows
+        for table in self.board:
+            for row in table:
+                r = set(row)
+                if r not in combos:
+                    combos.append(r)
+        print len(combos)
+
+        # cols
+        for table in self.board:
+            for x in range(len(table)):
+                c = set(table[:, x])
+                if c not in combos:
+                    combos.append(r)
+        print len(combos)
+
+        # diags on 2D
+        for table in self.board:
+            for diag in [table.diagonal(), table[::-1].diagonal()]:
+                d = set(diag)
+                if d not in combos:
+                    combos.append(d)
+        print len(combos)
+
+        # columns straight down
+        for x in range(len(self.board)):
+            for y in range(len(self.board[0])):
+                c = set(self.board[:, y,x])
+                if c not in combos:
+                    combos.append(c)
+        print len(combos)
+
+        # diags from tl to br in 3D
+        for diag in self.board.diagonal(axis1=0, axis2=2):
+            d = set(diag)
+            if d not in combos:
+                combos.append(d)
+        print len(combos)
+
+        # diags from tr to bl in 3D
+        for diag in self.board[::-1].diagonal(axis1=0, axis2=2):
+            d = set(diag)
+            if d not in combos:
+                combos.append(d)
+        print len(combos)
+
+        # diags from back top to front bottom in 3D
+        for diag in self.board.diagonal():
+            d = set(diag)
+            if d not in combos:
+                combos.append(d)
+        print len(combos)
+
+        # diags from front top to back bottom in 3D
+        for diag in self.board[::-1].diagonal():
+            d = set(diag)
+            if d not in combos:
+                combos.append(d)
+        print len(combos)
+
+        # diag special cases
+        combos.append(set(self.board.diagonal().diagonal()))
+        combos.append(set(self.board.diagonal()[::-1].diagonal()))
+        combos.append(set(self.board.diagonal(axis2=2)[::-1].diagonal()))
+        combos.append(set(self.board.diagonal(axis1=2)[::-1].diagonal()))
+        print len(combos)
+
+        return combos
 
     def display(self):
         '''Only for basic text input at the moment'''
@@ -164,4 +235,6 @@ class Board(object):
 if __name__ == '__main__':
     b = Board()
     b._sample_moves()
-    b.play()
+
+    import pprint
+    pprint.pprint(b.combos)
