@@ -102,8 +102,6 @@ class Board(object):
             pass
 
         # eventually return best possible move for AI
-        self.move(5, self.ai, dummy, dummy_moves)
-        self.display(dummy)
 
     def human_move(self, board):
         raise NotImplementedError
