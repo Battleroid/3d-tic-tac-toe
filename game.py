@@ -133,7 +133,6 @@ class Board(object):
                 r = set(row)
                 if r not in combos:
                     combos.append(r)
-        print len(combos)
 
         # cols
         for table in self.board:
@@ -141,7 +140,6 @@ class Board(object):
                 c = set(table[:, x])
                 if c not in combos:
                     combos.append(r)
-        print len(combos)
 
         # diags on 2D
         for table in self.board:
@@ -149,7 +147,6 @@ class Board(object):
                 d = set(diag)
                 if d not in combos:
                     combos.append(d)
-        print len(combos)
 
         # columns straight down
         for x in range(len(self.board)):
@@ -157,42 +154,36 @@ class Board(object):
                 c = set(self.board[:, y,x])
                 if c not in combos:
                     combos.append(c)
-        print len(combos)
 
         # diags from tl to br in 3D
         for diag in self.board.diagonal(axis1=0, axis2=2):
             d = set(diag)
             if d not in combos:
                 combos.append(d)
-        print len(combos)
 
         # diags from tr to bl in 3D
         for diag in self.board[::-1].diagonal(axis1=0, axis2=2):
             d = set(diag)
             if d not in combos:
                 combos.append(d)
-        print len(combos)
 
         # diags from back top to front bottom in 3D
         for diag in self.board.diagonal():
             d = set(diag)
             if d not in combos:
                 combos.append(d)
-        print len(combos)
 
         # diags from front top to back bottom in 3D
         for diag in self.board[::-1].diagonal():
             d = set(diag)
             if d not in combos:
                 combos.append(d)
-        print len(combos)
 
         # diag special cases
         combos.append(set(self.board.diagonal().diagonal()))
         combos.append(set(self.board.diagonal()[::-1].diagonal()))
         combos.append(set(self.board.diagonal(axis2=2)[::-1].diagonal()))
         combos.append(set(self.board.diagonal(axis1=2)[::-1].diagonal()))
-        print len(combos)
 
         return combos
 
@@ -234,7 +225,3 @@ class Board(object):
 
 if __name__ == '__main__':
     b = Board()
-    b._sample_moves()
-
-    import pprint
-    pprint.pprint(b.combos)
