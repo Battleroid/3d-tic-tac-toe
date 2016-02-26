@@ -2,15 +2,6 @@ from copy import deepcopy
 from colorama import Back, Style
 
 
-class Cell(object):
-    def __init__(self, player=None):
-        self.player = player
-
-    @property
-    def empty(self):
-        return self.player is None
-
-
 class Board(object):
 
     winning_combos = [
