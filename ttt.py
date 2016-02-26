@@ -1,4 +1,5 @@
 from copy import deepcopy
+from colorama import Back, Style
 
 
 class Cell(object):
@@ -13,21 +14,21 @@ class Cell(object):
 class Board(object):
 
     winning_combos = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14], 
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14],
         [15, 16, 17], [18, 19, 20], [21, 22, 23], [24, 25, 26],
 
         [0, 3, 6], [1, 4, 7], [2, 5, 8], [9, 12, 15], [10, 13, 16],
         [11, 14, 17], [18, 21, 24], [19, 22, 25], [20, 23, 26],
 
-        [0, 4, 8], [2, 4, 6], [9, 13, 17], [11, 13, 15], [18, 22, 26], 
+        [0, 4, 8], [2, 4, 6], [9, 13, 17], [11, 13, 15], [18, 22, 26],
         [20, 22, 24],
 
         [0, 9, 18], [1, 10, 19], [2, 11, 20], [3, 12, 21], [4, 13, 22],
         [5, 14, 23], [6, 15, 24], [7, 16, 25], [8, 17, 26],
 
-        [0, 12, 24], [1, 13, 25], [2, 14, 26], [6, 12, 18], [7, 13, 19], 
-        [8, 14, 20], [0, 10, 20], [3, 13, 23], [6, 16, 26], [2, 10, 18], 
-        [5, 13, 21], [8, 16, 24], [0, 13, 26], [2, 13, 24], [6, 13, 20], 
+        [0, 12, 24], [1, 13, 25], [2, 14, 26], [6, 12, 18], [7, 13, 19],
+        [8, 14, 20], [0, 10, 20], [3, 13, 23], [6, 16, 26], [2, 10, 18],
+        [5, 13, 21], [8, 16, 24], [0, 13, 26], [2, 13, 24], [6, 13, 20],
         [8, 13, 18]
     ]
 
@@ -81,34 +82,47 @@ class Board(object):
                 return b, r, c  # return coords of winning combination
         return False  # no winning combinations found
 
-    def move(self, position, player):
-        if position in self.allowed_moves:
-            self.allowed_moves.remove(position)
-            i, x, y = self.find(self.board, position)
-            self.board[i][x][y] = player
+    def move(self, position, player, board=None, allowed_moves=None):
+        if not board:
+            board = self.board
+        if not allowed_moves:
+            allowed_moves = self.allowed_moves
+        if position in allowed_moves:
+            allowed_moves.remove(position)
+            i, x, y = self.find(board, position)
+            board[i][x][y] = player
             return True
         return False  # no positions left
 
-    def human_move(self):
+    def think(self, ply, player):
+        dummy_moves = deepcopy(self.allowed_moves)  # copy of current allowed moves
+        dummy = deepcopy(self.board)  # copy of board for use in finding best move
+
+        def minimax(ply=ply, player=player, board=dummy):
+            pass
+
+        # eventually return best possible move for AI
+        self.move(5, self.ai, dummy, dummy_moves)
+        self.display(dummy)
+
+    def human_move(self, board):
         raise NotImplementedError
 
-    def computer_move(self):
+    def computer_move(self, board):
         raise NotImplementedError
 
-    def minimax(self, ply, player):
-        raise NotImplementedError
-
-    def display(self):
-        for i, board in enumerate(self.board):
+    def display(self, board=None):
+        if not board:
+            board = self.board
+        for i, bd in enumerate(board):
             print 'Board {:>2}'.format(i + 1)
-            for line in board:
-                print ' '.join('{:>2}'.format(x) for x in map(str, line))
+            for line in bd:
+                print ' '.join('{}'.format('{}{:>2}{}'.format(Back.RED, x, Style.RESET_ALL)) if x in self.players else '{:>2}'.format(x) for x in map(str, line))  # basically a red bg if a player has moved there
 
 
 if __name__ == '__main__':
     b = Board()
-    b.move(0, b.ai)
-    b.move(4, b.ai)
-    b.move(8, b.ai)
+    b.move(0, b.human)
+    b.move(13, b.human)
+    b.think(3, b.human)
     b.display()
-    b.check_wins()
