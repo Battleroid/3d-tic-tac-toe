@@ -36,7 +36,7 @@ class PossibleMove(object):
     LONE = 1  # single lone cell
     EMPTY = 0  # nothing
 
-    def __init__(self, rank=0, **kwargs):
+    def __init__(self, rank=PossibleMove.EMPTY, **kwargs):
         super(PossibleMove, self).__init__(**kwargs)
         self.rank = rank
 
@@ -120,11 +120,6 @@ class Board(object):
 
     def __create_combos(self):
         '''Generate all possible winning scenarios'''
-        # 1. Rows, cols, and diags for each table
-        # 2. Vertical cols
-        # 3. For each horizontal vert slice check diags
-        # 4. For each vertical slice check diags
-        # 5. Finally check 3D across entire array
         combos = []
 
         # rows
