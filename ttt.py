@@ -271,46 +271,42 @@ class Board(object):
         best_score = -1000
         best_move = -1
         hval = 0
+        win = False
 
         for move in self.allowed_moves:
             self.move(move, self.ai)
-            self.display()
-            print 'Moving to', move
-            print 'hval is', hval
-            print 'best_score', best_score
-            print 'best_move is', best_move
+            # self.display()
+            # print 'Moving to', move
+            # print 'hval is', hval
+            # print 'best_score', best_score
+            # print 'best_move is', best_move
             if self.complete and self.winner == self.ai:
-                print 'Done'
+                print 'Winning move is', move
+                win = True
                 break
             else:
-                print 'Move', move, 'was not a winner'
                 hval = self.think_ahead(self.human, -1000, 1000, self.difficulty)
                 if hval >= best_score:
                     best_score = hval
                     best_move = move
                 self.undo_move(move)
+            print '--- end of move iteration'
 
         print 'Next best move is', best_move
-        self.move(best_move, self.ai)
+        if not win:
+            self.move(best_move, self.ai)
 
     def think_ahead(self, player, alpha, beta, ply=None):
         if not ply:
             ply = self.difficulty
-        # if ply == -1:
-        #     print 'Reached depth, returning', self.simple_heuristic
-        #     return self.simple_heuristic
-        print 'Simple heuristic is:', self.simple_heuristic
         ply -= 1
-        print 'PLY IS', ply
         if ply > 0:
             if player == self.ai:
                 # alpha portion
-                print 'Alpha for AI'
                 hval = 0
                 for move in self.allowed_moves:
                     self.move(move, self.ai)
                     if self.complete and self.winner == self.ai:
-                        print 'Winning move for AI', move
                         self.undo_move(move)
                         return 1000
                     else:
@@ -323,12 +319,10 @@ class Board(object):
                 return alpha
             else:
                 # beta portion
-                print 'Beta for Human'
                 hval = 0
                 for move in self.allowed_moves:
                     self.move(move, self.human)
                     if self.complete and self.winner == self.human:
-                        print 'Winning move for Human', move
                         self.undo_move(move)
                         return -1000
                     else:
@@ -379,9 +373,12 @@ class Board(object):
 
 
 if __name__ == '__main__':
-    b = Board()
-    b.move(0, b.ai)
-    b.move(2, b.human)
-    b.move(26, b.ai)
-    b.display()
+    b = Board(ply=3)
     b.computers_turn()
+    b.move(4, b.human)
+    b.computers_turn()
+    b.move(0, b.human)
+    b.computers_turn()
+    b.move(18, b.human)
+    b.computers_turn()
+    b.display()
