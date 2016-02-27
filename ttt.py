@@ -130,25 +130,28 @@ class Board(object):
     @property
     def heuristic(self):
         if self.human_won:
-            return -100
+            return -10
         elif self.tied:
             return 0
         elif self.ai_won:
-            return 100
+            return 10
         else:
             return 0
-        # TODO: need blocking heuristic
+        # TODO: need blocking heuristic for ai to block human wins
         # TODO: need 3-in-row and 2-in-row and single cell heuristics
 
-    def minimax(self, node, player, ply):
+    def minimax(self, node, player, ply, a=-1e10000):
         if node.complete or ply == 0:
             return node.heuristic
-        a = -1e10000
         for move in node.allowed_moves:
             child = deepcopy(node)
             child.move(move, player)
-            a = max([a, -self.minimax(child, self.get_enemy(player), ply - 1)])
+            o = -self.minimax(child, self.get_enemy(player), ply - 1, a)
+            a = max(a, o)
         return a
+
+    def think(self, ply):
+        raise NotImplementedError
 
     def move(self, position, player):
         self.allowed_moves.remove(position)
@@ -185,5 +188,6 @@ if __name__ == '__main__':
     b.move(0, b.human)
     b.move(26, b.human)
     b.move(20, b.ai)
-    # print b.complete, b.winner, b.winning_combo
+    if b.complete:
+        print b.winner, b.winning_combo
     print b.minimax(b, b.ai, 3)
