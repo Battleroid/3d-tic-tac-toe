@@ -25,7 +25,7 @@ class Board(object):
 
     def __init__(self, player_first=True, human='X', ai='O', ply=3):
         self.board = Board.create_board()      # 3x3 grid for playing
-        self.allowed_moves = range(pow(3, 3))  # 27 available positions
+        self.allowed_moves = set(range(pow(3, 3)))  # 27 available positions
         self.difficulty = ply                  # 'difficulty'; game tree depth
         self.human_turn = player_first         # human moves first toggle
         self.human = human                     # character for human
@@ -86,7 +86,7 @@ class Board(object):
         return moves
 
     def available_combos(self, player):
-        return self.allowed_moves + self.get_moves(player)
+        return list(self.allowed_moves) + self.get_moves(player)
 
     @property
     def complete(self):
@@ -138,17 +138,17 @@ class Board(object):
     def tied(self):
         return self.complete and self.winner is None
 
-    @property
-    def heuristic(self):
-        # TODO: need blocking heuristic for ai to block human wins
-        if self.human_won:
-            return -100
-        elif self.tied:
-            return 0
-        elif self.ai_won:
-            return 100
-        else:
-            return self.simple_heuristic
+    # @property
+    # def heuristic(self):
+    #     # TODO: need blocking heuristic for ai to block human wins
+    #     if self.human_won:
+    #         return -100
+    #     elif self.tied:
+    #         return 0
+    #     elif self.ai_won:
+    #         return 100
+    #     else:
+    #         return self.simple_heuristic
 
     @property
     def simple_heuristic(self):
@@ -178,32 +178,174 @@ class Board(object):
                         wins += 1
         return wins
 
-    def minimax(self, node, player, ply):
-        '''Minimax for node evaluation'''
-        if node.complete or ply == 0:
-            return node.heuristic
-        a = -1e10000
-        for move in node.allowed_moves:
-            child = deepcopy(node)
-            child.move(move, player)
-            a = max([a, -self.minimax(child, self.get_enemy(player), ply - 1)])
-        return a
+    # def minimax(self, node, player, ply):
+    #     '''Minimax for node evaluation'''
+    #     if node.complete or ply == 0:
+    #         return node.heuristic
+    #     a = -1e10000
+    #     for move in node.allowed_moves:
+    #         child = deepcopy(node)
+    #         child.move(move, player)
+    #         a = max([a, -self.minimax(child, self.get_enemy(player), ply - 1)])
+    #     return a
 
-    def think(self, ply):
-        '''Uses minimax to establish the best move with the given ply'''
-        best_move = None
-        best_score = -1e10000
+    # def think(self, ply):
+    #     '''Uses minimax to establish the best move with the given ply'''
+    #     best_move = None
+    #     best_score = -1e10000
 
-        # find the best move of the available moves on the board using the 
-        # minimax method for each child node of the move
+    #     # find the best move of the available moves on the board using the 
+    #     # minimax method for each child node of the move
+    #     for move in self.allowed_moves:
+    #         score = self.minimax(self, self.ai, ply)
+    #         if score > best_score:
+    #             best_move = move
+    #             best_score = score
+
+    #     print 'I think we\'ll go to', best_move
+    #     self.move(best_move, self.ai)
+
+    # def computers_turn(self):
+    #     best_score = -1000
+    #     best_move = -1
+    #     hval = 0
+
+    #     for move in self.allowed_moves:
+    #         # first check if the move results in a win for the AI
+    #         dummy = deepcopy(self)
+    #         dummy.move(move, self.ai)
+    #         if dummy.complete and dummy.winner == self.ai:
+    #             self.move(move, self.ai)
+    #             print 'Game over!'
+    #             break
+    #         else:
+    #             # first move was not a win, generate game tree for this cell
+    #             dummy = deepcopy(self)
+    #             hval = self.think_ahead(dummy, self.human, -1000, 1000)
+    #         if hval >= best_score:
+    #             best_score = hval
+    #             best_move = move
+
+    #     # did not reach win condition, instead use best move
+    #     self.move(best_move, self.ai)
+    #     # TODO: toggle human turn for play
+
+    # TODO: do I really need to make copies of copies? probably really stupid
+    # def think_ahead(self, node, player, alpha, beta, ply=None):
+    #     if not ply:
+    #         ply = self.difficulty  # use default ply (3) if no ply specified
+    #     if ply == -1:
+    #         return self.simple_heuristic  # reached depth
+    #     if player == self.ai:
+    #         hval = 0
+    #         for move in node.allowed_moves:
+    #             dummy = deepcopy(node)
+    #             dummy.move(move, dummy.ai)
+    #             if dummy.complete and dummy.winner == self.ai:
+    #                 return 1000
+    #             else:
+    #                 dummy = deepcopy(node)
+    #                 hval = self.think_ahead(dummy, self.human, alpha, beta, ply - 1)
+    #                 if hval > alpha:
+    #                     alpha = hval
+    #             if alpha >= beta:
+    #                 break
+    #         return alpha
+    #     else:
+    #         hval = 0
+    #         for move in node.allowed_moves:
+    #             dummy = deepcopy(node)
+    #             dummy.move(move, dummy.human)
+    #             if dummy.complete and dummy.winner == self.human:
+    #                 return -1000
+    #             else:
+    #                 dummy = deepcopy(node)
+    #                 hval = self.think_ahead(dummy, self.ai, alpha, beta, ply - 1)
+    #                 if hval < beta:
+    #                     beta = hval
+    #             if alpha >= beta:
+    #                 break
+    #         return beta
+    
+    def computers_turn(self):
+        best_score = -1000
+        best_move = -1
+        hval = 0
+
         for move in self.allowed_moves:
-            score = self.minimax(self, self.ai, ply)
-            if score > best_score:
-                best_move = move
-                best_score = score
+            self.move(move, self.ai)
+            self.display()
+            print 'Moving to', move
+            print 'hval is', hval
+            print 'best_score', best_score
+            print 'best_move is', best_move
+            if self.complete and self.winner == self.ai:
+                print 'Done'
+                break
+            else:
+                print 'Move', move, 'was not a winner'
+                hval = self.think_ahead(self.human, -1000, 1000, self.difficulty)
+                if hval >= best_score:
+                    best_score = hval
+                    best_move = move
+                self.undo_move(move)
 
-        print 'I think we\'ll go to', best_move
+        print 'Next best move is', best_move
         self.move(best_move, self.ai)
+
+    def think_ahead(self, player, alpha, beta, ply=None):
+        if not ply:
+            ply = self.difficulty
+        # if ply == -1:
+        #     print 'Reached depth, returning', self.simple_heuristic
+        #     return self.simple_heuristic
+        print 'Simple heuristic is:', self.simple_heuristic
+        ply -= 1
+        print 'PLY IS', ply
+        if ply > 0:
+            if player == self.ai:
+                # alpha portion
+                print 'Alpha for AI'
+                hval = 0
+                for move in self.allowed_moves:
+                    self.move(move, self.ai)
+                    if self.complete and self.winner == self.ai:
+                        print 'Winning move for AI', move
+                        self.undo_move(move)
+                        return 1000
+                    else:
+                        hval = self.think_ahead(self.human, alpha, beta, ply)
+                        if hval > alpha:
+                            alpha = hval
+                        self.undo_move(move)
+                    if alpha >= beta:
+                        break
+                return alpha
+            else:
+                # beta portion
+                print 'Beta for Human'
+                hval = 0
+                for move in self.allowed_moves:
+                    self.move(move, self.human)
+                    if self.complete and self.winner == self.human:
+                        print 'Winning move for Human', move
+                        self.undo_move(move)
+                        return -1000
+                    else:
+                        hval = self.think_ahead(self.ai, alpha, beta, ply)
+                        if hval < beta:
+                            beta = hval
+                        self.undo_move(move)
+                    if alpha >= beta:
+                        break
+                return beta
+        else:
+            return self.simple_heuristic
+
+    def undo_move(self, position):
+        self.allowed_moves.add(position)
+        i, x, y = self.find(self.board, position)
+        self.board[i][x][y] = position
 
     def move(self, position, player):
         self.allowed_moves.remove(position)
@@ -238,12 +380,8 @@ class Board(object):
 
 if __name__ == '__main__':
     b = Board()
+    b.move(0, b.ai)
     b.move(2, b.human)
-    b.move(24, b.ai)
-    print 'Before:'
+    b.move(26, b.ai)
     b.display()
-    b.think(2)
-    b.move(11, b.human)  # this should be blocked @ 20
-    b.think(2)
-    print 'After:'
-    b.display()
+    b.computers_turn()
