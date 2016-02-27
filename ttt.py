@@ -1,5 +1,5 @@
 from copy import deepcopy
-from colorama import Back, Style
+from colorama import Back, Style, Fore
 
 
 class Board(object):
@@ -24,13 +24,13 @@ class Board(object):
     )
 
     def __init__(self, player_first=True, human='X', ai='O', ply=3):
-        self.board = Board.create_board()     # 3x3 grid for playing
-        self.allowed_moves = range(pow(3, 3)) # 27 available positions
-        self.difficulty = ply                 # 'difficulty'; game tree depth
-        self.human_turn = player_first        # human moves first toggle
-        self.human = human                    # character for human
-        self.ai = ai                          # character for ai
-        self.players = (human, ai)            # tuple of both characters
+        self.board = Board.create_board()      # 3x3 grid for playing
+        self.allowed_moves = range(pow(3, 3))  # 27 available positions
+        self.difficulty = ply                  # 'difficulty'; game tree depth
+        self.human_turn = player_first         # human moves first toggle
+        self.human = human                     # character for human
+        self.ai = ai                           # character for ai
+        self.players = (human, ai)             # tuple of both characters
 
     def find(self, arr, key):
         cnt = 0
@@ -63,6 +63,17 @@ class Board(object):
             board.append(bt)
         return board
 
+    def get_moves_by_combination(self, player):
+        moves = []
+        for combo in self.winning_combos:
+            move = []
+            for cell in combo:
+                b, r, c = self.find(self.board, cell)
+                if self.board[b][r][c] == player:
+                    move += [cell]
+            moves += [move]
+        return moves
+
     def get_moves(self, player):
         moves = []
         cnt = 0
@@ -83,7 +94,7 @@ class Board(object):
             for combo in self.winning_combos:
                 combo_avail = True
                 for pos in combo:
-                    if not pos in self.available_combos(player):
+                    if pos not in self.available_combos(player):
                         combo_avail = False
                 if combo_avail:
                     return self.winner is not None
@@ -125,33 +136,74 @@ class Board(object):
 
     @property
     def tied(self):
-        return self.complete == True and self.winner is None
+        return self.complete and self.winner is None
 
     @property
     def heuristic(self):
+        # TODO: need blocking heuristic for ai to block human wins
         if self.human_won:
-            return -10
+            return -100
         elif self.tied:
             return 0
         elif self.ai_won:
-            return 10
+            return 100
         else:
-            return 0
-        # TODO: need blocking heuristic for ai to block human wins
-        # TODO: need 3-in-row and 2-in-row and single cell heuristics
+            return self.simple_heuristic
 
-    def minimax(self, node, player, ply, a=-1e10000):
+    @property
+    def simple_heuristic(self):
+        return self.check_available(self.ai) - self.check_available(self.human)
+
+    def check_available(self, player):
+        wins = 0
+        table = [0 for x in range(27)]
+        cnt = 0
+
+        # create table of winning combinations
+        for i in range(3):
+            for x in range(3):
+                for y in range(3):
+                    if self.board[i][x][y] == player or \
+                            self.board[i][x][y] != self.get_enemy(player):
+                        table[cnt] = 1
+                    cnt += 1
+
+        # get total winning spots for given player
+        for i in range(len(self.winning_combos)):
+            cnt = 0
+            for j in range(3):
+                if table[self.winning_combos[i][j]] == 1:
+                    cnt += 1
+                    if cnt == 3:
+                        wins += 1
+        return wins
+
+    def minimax(self, node, player, ply):
+        '''Minimax for node evaluation'''
         if node.complete or ply == 0:
             return node.heuristic
+        a = -1e10000
         for move in node.allowed_moves:
             child = deepcopy(node)
             child.move(move, player)
-            o = -self.minimax(child, self.get_enemy(player), ply - 1, a)
-            a = max(a, o)
+            a = max([a, -self.minimax(child, self.get_enemy(player), ply - 1)])
         return a
 
     def think(self, ply):
-        raise NotImplementedError
+        '''Uses minimax to establish the best move with the given ply'''
+        best_move = None
+        best_score = -1e10000
+
+        # find the best move of the available moves on the board using the 
+        # minimax method for each child node of the move
+        for move in self.allowed_moves:
+            score = self.minimax(self, self.ai, ply)
+            if score > best_score:
+                best_move = move
+                best_score = score
+
+        print 'I think we\'ll go to', best_move
+        self.move(best_move, self.ai)
 
     def move(self, position, player):
         self.allowed_moves.remove(position)
@@ -167,7 +219,8 @@ class Board(object):
     def display(self):
         cnt = 0
         for i, bd in enumerate(self.board):
-            print 'Board {:>2}'.format(i + 1)
+            print '{}{}Board #{}{}'.format(Back.WHITE, Fore.BLACK, i + 1, \
+                    Style.RESET_ALL)
             for line in bd:
                 larr = []
                 for cell in line:
@@ -185,9 +238,12 @@ class Board(object):
 
 if __name__ == '__main__':
     b = Board()
-    b.move(0, b.human)
-    b.move(26, b.human)
-    b.move(20, b.ai)
-    if b.complete:
-        print b.winner, b.winning_combo
-    print b.minimax(b, b.ai, 3)
+    b.move(2, b.human)
+    b.move(24, b.ai)
+    print 'Before:'
+    b.display()
+    b.think(2)
+    b.move(11, b.human)  # this should be blocked @ 20
+    b.think(2)
+    print 'After:'
+    b.display()
