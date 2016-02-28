@@ -166,6 +166,10 @@ class Board(object):
                         wins += 1
         return wins
 
+    def humans_turn(self, move):
+        self.move(move, self.human)
+        self.humans_turn = False
+
     def computers_turn(self):
         best_score = -1000
         best_move = -1
@@ -187,11 +191,12 @@ class Board(object):
 
         if not win:
             self.move(best_move, self.ai)
+        self.human_turn = True
 
     def think_ahead(self, player, alpha, beta, ply=None):
         if not ply:
-            ply = self.difficulty
-        ply -= 1
+            ply = self.difficulty + 1
+        ply -= 1  # TODO: why does moving this cause bad things to happen?
         if ply > 0:
             if player == self.ai:
                 # alpha portion
@@ -263,8 +268,6 @@ class Board(object):
                     cnt += 1
                 print ' '.join(larr)
 
-
-if __name__ == '__main__':
-    b = Board(ply=4)
-    b.computers_turn()
-    b.display()
+    def play(self):
+        while not self.complete:
+            raise NotImplementedError
