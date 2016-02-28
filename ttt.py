@@ -165,7 +165,7 @@ class Board(object):
                     if cnt == 3:
                         wins += 1
         return wins
-    
+
     def computers_turn(self):
         best_score = -1000
         best_move = -1
@@ -178,7 +178,8 @@ class Board(object):
                 win = True
                 break
             else:
-                hval = self.think_ahead(self.human, -1000, 1000, self.difficulty)
+                hval = self.think_ahead(self.human, \
+                        -1000, 1000, self.difficulty)
                 if hval >= best_score:
                     best_score = hval
                     best_move = move
