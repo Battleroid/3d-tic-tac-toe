@@ -285,5 +285,4 @@ class Board(object):
             print '\nWhat? Giving up already?'
 
 if __name__ == '__main__':
-    b = Board(ply=6, human_first=False)
-    b.play()
+    Board(ply=6).play()
