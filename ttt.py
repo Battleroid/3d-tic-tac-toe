@@ -37,6 +37,10 @@ class Board(object):
         self.ai = ai                           # character for ai
         self.players = (human, ai)             # tuple of both characters
 
+    # def find_value(self, key):
+    #     b, r, c = self.find(self.board, key)
+    #     return self.board[b][r][c]
+
     def find(self, arr, key):
         cnt = 0
         for i in range(3):
@@ -145,7 +149,19 @@ class Board(object):
 
     @property
     def simple_heuristic(self):
-        return self.check_available(self.ai) - self.check_available(self.human)
+        return self.check_available2(self.ai) - self.check_available2(self.human)
+
+    def find_value(self, key):
+        b, r, c = self.find(self.board, key)
+        return self.board[b][r][c]
+
+    def check_available2(self, player):
+        enemy = self.get_enemy(player)
+        wins = 0
+        for combo in self.winning_combos:
+            if all([self.find_value(x) == player or self.find_value(x) != enemy for x in combo]):
+                wins += 1
+        return wins
 
     def check_available(self, player):
         wins = 0
@@ -156,8 +172,6 @@ class Board(object):
         for i in range(3):
             for x in range(3):
                 for y in range(3):
-                    # if self.board[i][x][y] == player or \
-                    #         self.board[i][x][y] != self.get_enemy(player):
                     if self.board[i][x][y] == player or self.board[i][x][y] == cnt:
                         table[cnt] = 1
                     cnt += 1
@@ -181,74 +195,10 @@ class Board(object):
 
     def computers_move(self):
         best_score = -1000
-        best_move = -1
-        hval = 0
-        win = False
-
-        for move in self.allowed_moves:
-            self.move(move, self.ai)
-            if self.complete and self.winner == self.ai:
-                win = True
-                break
-            else:
-                hval = self.think_ahead(self.human, \
-                        -1000, 1000, self.difficulty)
-                if hval >= best_score:
-                    best_score = hval
-                    best_move = move
-                self.undo_move(move)
-
-        if not win:
-            self.move(best_move, self.ai)
-        self.human_turn = True
-
-    def think_ahead(self, player, alpha, beta, ply=None):
-        if not ply:
-            ply = self.difficulty + 1
-        ply -= 1
-        if ply > 0:
-            if player == self.ai:
-                # alpha portion
-                hval = 0
-                for move in self.allowed_moves:
-                    self.move(move, self.ai)
-                    if self.complete and self.winner == self.ai:
-                        self.undo_move(move)
-                        return 1000
-                    else:
-                        hval = hval + self.think_ahead(self.human, alpha, beta, ply)
-                        if hval > alpha:
-                            alpha = hval
-                        self.undo_move(move)
-                    if alpha >= beta:
-                        break
-                return alpha
-            else:
-                # beta portion
-                hval = 0
-                for move in self.allowed_moves:
-                    self.move(move, self.human)
-                    if self.complete and self.winner == self.human:
-                        self.undo_move(move)
-                        return -1000
-                    else:
-                        hval = hval + self.think_ahead(self.ai, alpha, beta, ply)
-                        if hval < beta:
-                            beta = hval
-                        self.undo_move(move)
-                    if alpha >= beta:
-                        break
-                return beta
-        else:
-            return self.simple_heuristic
-
-    def computers_move2(self):
-        best_score = -1000
         best_move = None
         h = None
         win = False
         
-        print self.allowed_moves
         for move in self.allowed_moves:
         # for i in range(len(self.allowed_moves)):
             # move = self.allowed_moves[i]
@@ -257,7 +207,7 @@ class Board(object):
                 win = True
                 break
             else:
-                h = self.think_ahead2(self.human, -1000, 1000)
+                h = self.think_ahead(self.human, -1000, 1000)
             self.depth_count = 0
             if h >= best_score:
                 best_score = h
@@ -265,13 +215,12 @@ class Board(object):
                 self.undo_move(move)
             else:
                 self.undo_move(move)
-            print move, h  # all -6, -8, -9, 6 (13, middle)
 
         if not win:
             self.move(best_move, self.ai)
         self.human_turn = True
 
-    def think_ahead2(self, player, a, b):
+    def think_ahead(self, player, a, b):
         if self.depth_count == self.difficulty:
             return self.simple_heuristic
         if self.depth_count <= self.difficulty:
@@ -284,7 +233,7 @@ class Board(object):
                         self.undo_move(move)
                         return 1000
                     else:
-                        h = self.think_ahead2(self.human, a, b)
+                        h = self.think_ahead(self.human, a, b)
                         if h > a:
                             a = h
                             self.undo_move(move)
@@ -301,7 +250,7 @@ class Board(object):
                         self.undo_move(move)
                         return -1000
                     else:
-                        h = self.think_ahead2(self.ai, a, b)
+                        h = self.think_ahead(self.ai, a, b)
                         if h < b:
                             b = h
                             self.undo_move(move)
@@ -311,8 +260,6 @@ class Board(object):
                         break
                 return b
         else:
-            # diff = self.check_available(self.ai) - self.check_available(self.human)
-            # return diff
             return self.simple_heuristic
 
     def undo_move(self, position):
@@ -360,20 +307,19 @@ class Board(object):
         self.humans_move(position)
 
     def play(self):
-        # if not self.human_turn:
-        #     self.move(13, self.ai)
-        #     self.human_turn = True
+        try:
+            while not self.complete:
+                if self.human_turn:
+                    self.display()
+                    self._get_human_input()
+                else:
+                    self.computers_move()
 
-        while not self.complete:
-            if self.human_turn:
-                self.display()
-                self._get_human_input()
-            else:
-                self.computers_move2()
-
-        print '{}{} won!'.format(Style.BRIGHT, self.winner)
-        self.display()
+            print '{}{} won!'.format(Style.BRIGHT, self.winner)
+            self.display()
+        except KeyboardInterrupt:
+            print '\nWhat? Giving up already?'
 
 if __name__ == '__main__':
-    b = Board(ply=5, human_first=False)
+    b = Board(ply=6, human_first=False)
     b.play()
