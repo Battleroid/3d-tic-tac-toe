@@ -3,6 +3,9 @@ from colorama import Back, Style, Fore
 
 
 class Board(object):
+    '''
+    Ply of 5 seems to work great, even if it's slightly idiotic.
+    '''
 
     winning_combos = (
         [0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14],
@@ -166,11 +169,11 @@ class Board(object):
                         wins += 1
         return wins
 
-    def humans_turn(self, move):
+    def humans_move(self, move):
         self.move(move, self.human)
-        self.humans_turn = False
+        self.human_turn = False
 
-    def computers_turn(self):
+    def computers_move(self):
         best_score = -1000
         best_move = -1
         hval = 0
@@ -268,6 +271,20 @@ class Board(object):
                     cnt += 1
                 print ' '.join(larr)
 
+    def _get_human_input(self):
+        position = raw_input('Which position? ')
+        while not position.isdigit():
+            position = raw_input('Integer required; which position? ')
+        position = int(position)
+        self.humans_move(position)
+
     def play(self):
         while not self.complete:
-            raise NotImplementedError
+            if self.human_turn:
+                self.display()
+                self._get_human_input()
+            else:
+                self.computers_move()
+
+        print '{}{} won!'.format(Style.BRIGHT, self.winner)
+        self.display()
