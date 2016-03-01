@@ -1,11 +1,7 @@
-from copy import deepcopy
 from colorama import Back, Style, Fore
 
 
 class Board(object):
-    '''
-    Ply of 5 seems to work great, even if it's slightly idiotic.
-    '''
 
     winning_combos = (
         [0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14],
@@ -28,7 +24,6 @@ class Board(object):
 
     def __init__(self, human_first=True, human='X', ai='O', ply=3):
         self.board = Board.create_board()      # 3x3 grid for playing
-        # self.allowed_moves = set(range(pow(3, 3)))  # 27 available positions
         self.allowed_moves = range(pow(3, 3))
         self.difficulty = ply                  # 'difficulty'; game tree depth
         self.depth_count = 0
@@ -36,10 +31,6 @@ class Board(object):
         self.human = human                     # character for human
         self.ai = ai                           # character for ai
         self.players = (human, ai)             # tuple of both characters
-
-    # def find_value(self, key):
-    #     b, r, c = self.find(self.board, key)
-    #     return self.board[b][r][c]
 
     def find(self, arr, key):
         cnt = 0
@@ -149,44 +140,19 @@ class Board(object):
 
     @property
     def simple_heuristic(self):
-        return self.check_available2(self.ai) - self.check_available2(self.human)
+        return self.check_available(self.ai) - self.check_available(self.human)
 
     def find_value(self, key):
         b, r, c = self.find(self.board, key)
         return self.board[b][r][c]
 
-    def check_available2(self, player):
+    def check_available(self, player):
         enemy = self.get_enemy(player)
         wins = 0
         for combo in self.winning_combos:
-            if all([self.find_value(x) == player or self.find_value(x) != enemy for x in combo]):
-                wins += 1
-        return wins
-
-    def check_available(self, player):
-        wins = 0
-        table = [0 for x in range(27)]
-        cnt = 0
-
-        # create table of winning combinations
-        for i in range(3):
-            for x in range(3):
-                for y in range(3):
-                    if self.board[i][x][y] == player or self.board[i][x][y] == cnt:
-                        table[cnt] = 1
-                    cnt += 1
-
-        # get total winning spots for given player
-        for i in range(len(self.winning_combos)):
-            cnt = 0
-            for j in range(3):
-                if table[self.winning_combos[i][j]] == 1:
-                    cnt += 1
-                    if cnt == 3:
-                        wins += 1
-                else:
-                    cnt += 1
-                    wins -= 1
+            if all([self.find_value(x) == player or \
+                    self.find_value(x) != enemy for x in combo]):
+                    wins += 1
         return wins
 
     def humans_move(self, move):
@@ -198,10 +164,8 @@ class Board(object):
         best_move = None
         h = None
         win = False
-        
+
         for move in self.allowed_moves:
-        # for i in range(len(self.allowed_moves)):
-            # move = self.allowed_moves[i]
             self.move(move, self.ai)
             if self.complete:
                 win = True
