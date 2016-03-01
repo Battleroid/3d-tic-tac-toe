@@ -26,12 +26,13 @@ class Board(object):
         [8, 13, 18]
     )
 
-    def __init__(self, player_first=True, human='X', ai='O', ply=3):
+    def __init__(self, human_first=True, human='X', ai='O', ply=3):
         self.board = Board.create_board()      # 3x3 grid for playing
-        self.allowed_moves = set(range(pow(3, 3)))  # 27 available positions
+        # self.allowed_moves = set(range(pow(3, 3)))  # 27 available positions
+        self.allowed_moves = range(pow(3, 3))
         self.difficulty = ply                  # 'difficulty'; game tree depth
         self.depth_count = 0
-        self.human_turn = player_first         # human moves first toggle
+        self.human_turn = human_first          # human moves first toggle
         self.human = human                     # character for human
         self.ai = ai                           # character for ai
         self.players = (human, ai)             # tuple of both characters
@@ -215,7 +216,7 @@ class Board(object):
                         self.undo_move(move)
                         return 1000
                     else:
-                        hval = self.think_ahead(self.human, alpha, beta, ply)
+                        hval = hval + self.think_ahead(self.human, alpha, beta, ply)
                         if hval > alpha:
                             alpha = hval
                         self.undo_move(move)
@@ -231,7 +232,7 @@ class Board(object):
                         self.undo_move(move)
                         return -1000
                     else:
-                        hval = self.think_ahead(self.ai, alpha, beta, ply)
+                        hval = hval + self.think_ahead(self.ai, alpha, beta, ply)
                         if hval < beta:
                             beta = hval
                         self.undo_move(move)
@@ -247,7 +248,10 @@ class Board(object):
         h = None
         win = False
         
+        print self.allowed_moves
         for move in self.allowed_moves:
+        # for i in range(len(self.allowed_moves)):
+            # move = self.allowed_moves[i]
             self.move(move, self.ai)
             if self.complete:
                 win = True
@@ -261,12 +265,15 @@ class Board(object):
                 self.undo_move(move)
             else:
                 self.undo_move(move)
+            print move, h  # all -6, -8, -9, 6 (13, middle)
 
         if not win:
             self.move(best_move, self.ai)
         self.human_turn = True
 
     def think_ahead2(self, player, a, b):
+        if self.depth_count == self.difficulty:
+            return self.simple_heuristic
         if self.depth_count <= self.difficulty:
             self.depth_count += 1
             if player == self.ai:
@@ -304,16 +311,19 @@ class Board(object):
                         break
                 return b
         else:
-            diff = self.check_available(self.ai) - self.check_available(self.human)
-            return diff
+            # diff = self.check_available(self.ai) - self.check_available(self.human)
+            # return diff
+            return self.simple_heuristic
 
     def undo_move(self, position):
-        self.allowed_moves.add(position)
+        self.allowed_moves += [position]
+        self.allowed_moves.sort()
         i, x, y = self.find(self.board, position)
         self.board[i][x][y] = position
 
     def move(self, position, player):
         self.allowed_moves.remove(position)
+        self.allowed_moves.sort()
         i, x, y = self.find(self.board, position)
         self.board[i][x][y] = player
 
@@ -350,6 +360,10 @@ class Board(object):
         self.humans_move(position)
 
     def play(self):
+        # if not self.human_turn:
+        #     self.move(13, self.ai)
+        #     self.human_turn = True
+
         while not self.complete:
             if self.human_turn:
                 self.display()
@@ -361,5 +375,5 @@ class Board(object):
         self.display()
 
 if __name__ == '__main__':
-    b = Board(ply=3)
+    b = Board(ply=5, human_first=False)
     b.play()
