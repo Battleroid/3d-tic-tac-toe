@@ -270,7 +270,7 @@ class Board(object):
         if self.depth_count <= self.difficulty:
             self.depth_count += 1
             if player == self.ai:
-                h = None
+                h = -1000
                 for move in self.allowed_moves:
                     self.move(move, player)
                     if self.complete:
@@ -287,7 +287,7 @@ class Board(object):
                         break
                 return a
             else:
-                h = None
+                h = 1000
                 for move in self.allowed_moves:
                     self.move(move, player)
                     if self.complete:
@@ -361,6 +361,5 @@ class Board(object):
         self.display()
 
 if __name__ == '__main__':
-    b = Board(ply=6)
+    b = Board(ply=3)
     b.play()
-
