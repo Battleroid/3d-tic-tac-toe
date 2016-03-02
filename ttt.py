@@ -277,12 +277,20 @@ class Board(object):
                 break
             else:
                 h = self.think_ahead(self.human, -1000, 1000)
-            self.depth_count = 0
-            if h >= best_score:
-                best_score = h
-                best_move = move
-                self.undo_move(move)
-            else:
+                self.depth_count = 0
+                if h >= best_score:
+                    best_score = h
+                    best_move = move
+                    self.undo_move(move)
+                else:
+                    self.undo_move(move)
+                
+                # see if it blocks the player
+                self.move(move, self.human)
+                if self.complete and self.winner == self.human:
+                    if 1001 >= best_score:
+                        best_score = 1001
+                        best_move = move
                 self.undo_move(move)
 
         if not win:
