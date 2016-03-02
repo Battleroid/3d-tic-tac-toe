@@ -12,7 +12,7 @@ class Board(object):
     """3D TTT logic and underlying game state object.
 
     Attributes:
-        board (list[List[List[int]]]): 3D array of positions.
+        board (List[List[List[int]]]): 3D array of positions.
         allowed_moves (List[int]): List of currently unoccupied positions.
         difficulty (int): Ply; number of moves to look ahead.
         depth_count (int): Used in conjunction with ply to control depth.
