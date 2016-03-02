@@ -90,15 +90,16 @@ class TTTUI(object):
                     cnt += 1
 
     def place_human(self, position):
-        if position in self.ttt.allowed_moves:
+        if position in self.ttt.allowed_moves and not self.ttt.complete:
             self.ttt.move(position, self.ttt.human)
             self.ttt.human_turn = False
             self.update_pieces()
             self.place_computer()
 
     def place_computer(self):
-        self.ttt.computers_move()
-        self.update_pieces()
+        if not self.ttt.complete:
+            self.ttt.computers_move()
+            self.update_pieces()
 
     def reset(self):
         self.ttt.reset()
