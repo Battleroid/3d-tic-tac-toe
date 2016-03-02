@@ -32,6 +32,11 @@ class Board(object):
         self.ai = ai                           # character for ai
         self.players = (human, ai)             # tuple of both characters
 
+    def reset(self):
+        self.allowed_moves = range(pow(3, 3))
+        self.board = Board.create_board()
+        self.depth_count = 0
+
     def find(self, arr, key):
         cnt = 0
         for i in range(3):
