@@ -24,6 +24,7 @@ class TTTUI(object):
 
         # UI related
         self.root = Tk()
+        self.root.resizable(0, 0)
         self.root.title("3D TTT")
 
         # TTT frames
